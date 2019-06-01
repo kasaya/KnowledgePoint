@@ -290,7 +290,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/01/【Spring cloud Config】 Client端中bootstrap文件中@@占位符无法识别/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/01/Spring-Cloud-Config/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="kasaya">
@@ -310,7 +310,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/06/01/【Spring cloud Config】 Client端中bootstrap文件中@@占位符无法识别/" class="post-title-link" itemprop="url">spring-cloud-config</a>
+                <a href="/2019/06/01/Spring-Cloud-Config/" class="post-title-link" itemprop="url">【Spring Cloud Config】 Client端中bootstrap文件中@@占位符无法识别</a>
               
             
           </h1>
@@ -335,7 +335,7 @@
                 
               
 
-              <time title="创建时间：2019-06-01 15:06:27 / 修改时间：15:15:30" itemprop="dateCreated datePublished" datetime="2019-06-01T15:06:27+08:00">2019-06-01</time>
+              <time title="创建时间：2019-06-01 15:06:27 / 修改时间：15:23:27" itemprop="dateCreated datePublished" datetime="2019-06-01T15:06:27+08:00">2019-06-01</time>
             
 
             
@@ -345,6 +345,24 @@
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -376,7 +394,7 @@
       
         
           
-            <h3 id="【Spring-cloud-Config】-Client端中bootstrap文件中-占位符无法识别"><a href="#【Spring-cloud-Config】-Client端中bootstrap文件中-占位符无法识别" class="headerlink" title="【Spring cloud Config】 Client端中bootstrap文件中@@占位符无法识别"></a>【Spring cloud Config】 Client端中bootstrap文件中@@占位符无法识别</h3><p>想在bootstrap.yml中配置spring.profile.active, 但是无法识别@@占位符<br>虽然我已经继承了spring-boot-starter-parent，但是还是无效，用${}也无法识别</p>
+            <p>想在bootstrap.yml中配置spring.profile.active, 但是无法识别@@占位符<br>虽然我已经继承了spring-boot-starter-parent，但是还是无效，用${}也无法识别</p>
 <p>解决办法：<br>重新定义@符号，对src/main/resources的配置文件都做处理</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-resources-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">delimiters</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">delimiter</span>&gt;</span>@<span class="tag">&lt;/<span class="name">delimiter</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">delimiters</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">useDefaultDelimiters</span>&gt;</span>false<span class="tag">&lt;/<span class="name">useDefaultDelimiters</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/resources<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">filtering</span>&gt;</span>true<span class="tag">&lt;/<span class="name">filtering</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -608,6 +626,19 @@
               
 
               
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
 
               
                 
@@ -618,7 +649,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">1</span>
+                      
+                    
+                    <span class="site-state-item-count">2</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>

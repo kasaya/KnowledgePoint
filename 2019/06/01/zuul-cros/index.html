@@ -96,13 +96,18 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="SLAYERS">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="大家都知道spring boot 可以通过@CrossOrigin实现跨域。但是在spring cloud 里，如果要粒度那么细的去控制跨域，这个就太繁琐了，所以一般来说，会在路由zuul里实现。 第一种方式：corsFilter在zuul服务下添加一个corsFilter实现跨域，实现起来方便。代码如下 123456789101112131415161718@Configurationpubli">
+<meta name="keywords" content="spring cloud,zuul">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zuul实现Cros跨域的两种方式(https)">
+<meta property="og:url" content="http://yoursite.com/2019/06/01/zuul-cros/index.html">
 <meta property="og:site_name" content="SLAYERS">
+<meta property="og:description" content="大家都知道spring boot 可以通过@CrossOrigin实现跨域。但是在spring cloud 里，如果要粒度那么细的去控制跨域，这个就太繁琐了，所以一般来说，会在路由zuul里实现。 第一种方式：corsFilter在zuul服务下添加一个corsFilter实现跨域，实现起来方便。代码如下 123456789101112131415161718@Configurationpubli">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-01T07:36:35.901Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="SLAYERS">
+<meta name="twitter:title" content="zuul实现Cros跨域的两种方式(https)">
+<meta name="twitter:description" content="大家都知道spring boot 可以通过@CrossOrigin实现跨域。但是在spring cloud 里，如果要粒度那么细的去控制跨域，这个就太繁琐了，所以一般来说，会在路由zuul里实现。 第一种方式：corsFilter在zuul服务下添加一个corsFilter实现跨域，实现起来方便。代码如下 123456789101112131415161718@Configurationpubli">
 
 
 
@@ -110,7 +115,7 @@
 
   
   
-  <link rel="canonical" href="http://yoursite.com/">
+  <link rel="canonical" href="http://yoursite.com/2019/06/01/zuul-cros/">
 
 
 
@@ -120,7 +125,7 @@
   };
 </script>
 
-  <title>SLAYERS</title>
+  <title>zuul实现Cros跨域的两种方式(https) | SLAYERS</title>
   
 
 
@@ -168,8 +173,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -211,7 +215,7 @@
         
         
           
-          <li class="menu-item menu-item-home menu-item-active">
+          <li class="menu-item menu-item-home">
 
     
     
@@ -273,9 +277,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -307,10 +311,8 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/01/zuul-cros/" class="post-title-link" itemprop="url">zuul实现Cros跨域的两种方式(https)</a>
+          <h1 class="post-title" itemprop="name headline">zuul实现Cros跨域的两种方式(https)
+
               
             
           </h1>
@@ -392,9 +394,7 @@
       
 
       
-        
-          
-            <p>大家都知道spring boot 可以通过@CrossOrigin实现跨域。但是在spring cloud 里，如果要粒度那么细的去控制跨域，这个就太繁琐了，所以一般来说，会在路由zuul里实现。</p>
+        <p>大家都知道spring boot 可以通过@CrossOrigin实现跨域。但是在spring cloud 里，如果要粒度那么细的去控制跨域，这个就太繁琐了，所以一般来说，会在路由zuul里实现。</p>
 <h2 id="第一种方式：corsFilter"><a href="#第一种方式：corsFilter" class="headerlink" title="第一种方式：corsFilter"></a>第一种方式：corsFilter</h2><p>在zuul服务下添加一个corsFilter实现跨域，实现起来方便。代码如下</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GateWayCorsConfig</span> </span>&#123;</span><br><span class="line">   <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> FilterRegistrationBean <span class="title">corsFilter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> UrlBasedCorsConfigurationSource source = <span class="keyword">new</span> UrlBasedCorsConfigurationSource();</span><br><span class="line">        <span class="keyword">final</span> CorsConfiguration config = <span class="keyword">new</span> CorsConfiguration();</span><br><span class="line">        config.setAllowCredentials(<span class="keyword">true</span>);</span><br><span class="line">        config.addAllowedOrigin(<span class="string">"*"</span>);</span><br><span class="line">        config.addAllowedHeader(<span class="string">"*"</span>);</span><br><span class="line">        config.addAllowedMethod(<span class="string">"*"</span>);</span><br><span class="line">        <span class="comment">//这个请求头在https中会出现,但是有点问题，下面我会说</span></span><br><span class="line">        <span class="comment">//config.addExposedHeader("X-forwared-port, X-forwarded-host"); </span></span><br><span class="line">        source.registerCorsConfiguration(<span class="string">"/**"</span>, config);</span><br><span class="line">        FilterRegistrationBean bean = <span class="keyword">new</span> FilterRegistrationBean(<span class="keyword">new</span> CorsFilter(source));</span><br><span class="line">        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -412,8 +412,6 @@
 <p>按照以上方式配置的话，方法一出现的问题，就得到了解决。服务A能够正常请求服务B了</p>
 <p>虽然是正常实现了需求，但是感觉还是存在很多疑惑，希望大家看到的话，能给我指出不足。一起讨论！</p>
 
-          
-        
       
     </div>
 
@@ -434,178 +432,38 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/01/Spring-Cloud-Config/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="kasaya">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="SLAYERS">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/01/Spring-Cloud-Config/" class="post-title-link" itemprop="url">【Spring Cloud Config】 Client端中bootstrap文件中@@占位符无法识别</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-01 15:06:27 / 修改时间：15:23:27" itemprop="dateCreated datePublished" datetime="2019-06-01T15:06:27+08:00">2019-06-01</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
-
-                
-                
-              
-            </span>
+            <a href="/tags/spring-cloud/" rel="tag"># spring cloud</a>
           
-
+            <a href="/tags/zuul/" rel="tag"># zuul</a>
           
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>想在bootstrap.yml中配置spring.profile.active, 但是无法识别@@占位符<br>虽然我已经继承了spring-boot-starter-parent，但是还是无效，用${}也无法识别</p>
-<p>解决办法：<br>重新定义@符号，对src/main/resources的配置文件都做处理</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-resources-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">delimiters</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">delimiter</span>&gt;</span>@<span class="tag">&lt;/<span class="name">delimiter</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">delimiters</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">useDefaultDelimiters</span>&gt;</span>false<span class="tag">&lt;/<span class="name">useDefaultDelimiters</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/resources<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">filtering</span>&gt;</span>true<span class="tag">&lt;/<span class="name">filtering</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/01/Spring-Cloud-Config/" rel="next" title="【Spring Cloud Config】 Client端中bootstrap文件中@@占位符无法识别">
+                <i class="fa fa-chevron-left"></i> 【Spring Cloud Config】 Client端中bootstrap文件中@@占位符无法识别
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -615,14 +473,15 @@
   </article>
 
 
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -642,8 +501,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -723,6 +591,23 @@
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#第一种方式：corsFilter"><span class="nav-number">1.</span> <span class="nav-text">第一种方式：corsFilter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第二种方式：继承ZuulFilter"><span class="nav-number">2.</span> <span class="nav-text">第二种方式：继承ZuulFilter</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
@@ -851,6 +736,10 @@
 
 
   
+  <script src="/js/scrollspy.js?v=7.1.1"></script>
+<script src="/js/post-details.js?v=7.1.1"></script>
+
+
 
   
 
@@ -866,6 +755,8 @@
 
   
 
+
+  
 
 
   

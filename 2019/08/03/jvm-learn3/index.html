@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="Kasaya 咔酱,kasaya@qq.com"><title>【JVM学习笔记】第三章-虚拟机执行子系统 · SLAYERS</title><meta name="description" content="3.2 对象判活算法判断对象死亡的两种做法
+
+引用计数算法，在对象中添加引用计数器，多一个引用，计数器+1；引用失效，计数器-1；计数器为0 ，表示对象不再使用，可以被回收。缺点（无法解决两个对象互相引用的问题，事实证明jvm虚拟机不是通过引用计数算法来判断对象存活的）
+可达性分析算法， 通过一系列"><meta name="keywords" content="Spring,Spring Cloud,Java,JVM"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><link rel="short icon" href="/images/favicon.png" type="image/x-icon"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/logo@2x.png" style="width:127px;"><h3 title><a href="/">SLAYERS</a></h3><div class="description"><p>老板！再来一碗！</p></div></div></div><ul class="social-links"></ul><div class="footer"><a target="_blank" href="/"><span>Theme by </span></a><a href="https://www.caicai.me"> CaiCai </a><span>&</span><a href="https://github.com/Ben02/hexo-theme-Anatole"> Ben</a><div class="by_farbox"><a href="https://hexo.io/zh-cn/" target="_blank">Proudly published with Hexo&#65281;</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">Home</a></li><li><a href="/about">Sobre</a></li><li><a href="/archives">Arquivo</a></li><li><a href="/links">Links</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div><div class="avatar"><img src="/images/head.jpg"></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>【JVM学习笔记】第三章-虚拟机执行子系统</a></h3></div><div class="post-content"><h4 id="3-2-对象判活算法"><a href="#3-2-对象判活算法" class="headerlink" title="3.2 对象判活算法"></a>3.2 对象判活算法</h4><p>判断对象死亡的两种做法</p>
+<ol>
+<li>引用计数算法，在对象中添加引用计数器，多一个引用，计数器+1；引用失效，计数器-1；计数器为0 ，表示对象不再使用，可以被回收。缺点（无法解决两个对象互相引用的问题，事实证明jvm虚拟机不是通过引用计数算法来判断对象存活的）</li>
+<li>可达性分析算法， 通过一系列被称为“gc root”的对象作为起始点，从这些节点向下搜索，搜索所走过的路径称为“引用链”，当一个对象到gc root 没有任何引用链项链，称为“不可达”，证明此对象是不可用的。</li>
+</ol>
+<p>在java 语言中，可以作为gc roots的对象包括以下几种：</p>
+<ol>
+<li>虚拟机栈（栈帧中的本地变量表）中的引用的对象。</li>
+<li>方法区中的静态属性引用的对象。</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈jni（native方法）引用的对象。</li>
+</ol>
+<p>GC管理的主要区域是Java堆，一般情况下只针对堆进行垃圾回收。方法区、栈和本地方法区不被GC所管理,因而选择这些区域内的对象作为GC roots,被GC roots引用的对象不被GC回收。</p>
+<h5 id="对象引用的4中引用"><a href="#对象引用的4中引用" class="headerlink" title="对象引用的4中引用"></a>对象引用的4中引用</h5><ol>
+<li>强引用，就是普遍存在的 Object a = new Object() 显示的引用，只要强引用存在，垃圾收集器永远不会回收被引用的对象</li>
+<li>软引用，有用但非必须的对象。系统将会在发生内存溢出前，将这些被软引用关联的对象进行第二次回收。如果没有回收后还没有足够内存，就会抛出内存溢出异常</li>
+<li>弱引用，非必须对象，被弱引用关联的对象只能生存到下一次垃圾收集之前。无论内存是否足够，都会被回收</li>
+<li>虚引用（幽灵引用，幻影引用）不能对对象的生存构成影响，他的使用目的是为了在这个对象被收集器回收时收到一个系统通知。</li>
+</ol>
+<h5 id="两次标记"><a href="#两次标记" class="headerlink" title="两次标记"></a>两次标记</h5><p><img src="/2019/08/03/jvm-learn3/0.png" alt="0"></p>
+<h5 id="回收方法区（永久代）"><a href="#回收方法区（永久代）" class="headerlink" title="回收方法区（永久代）"></a>回收方法区（永久代）</h5><ol>
+<li>方法区回收效率低</li>
+<li>回收的主要内容: 废弃的常量 与 无用的类。 判断废弃的常量与java堆中的对象回收类似，判断是否有对象引用常量池里的常量。 判断废弃的类要满足以下三个条件：<ol>
+<li>该类的所有类实例都已经被回收，也就是java堆中不存在改类的任何实例</li>
+<li>加载该类的classloader已经被回收</li>
+<li>该类对应的java.lang.class对象没有在任何地方被引用，无法在任何地方通过反射访问该类的方法。</li>
+</ol>
+</li>
+</ol>
+<p>​        满足以上方法，可以对类进行回收，但不是必然会回收。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">是否对类进行回收，HotSpot虚拟机提供了-Xnoclassgc</span><br><span class="line">参数进行控制，还可以使用-verbose：<span class="class"><span class="keyword">class</span>以及-<span class="title">XX</span>：+<span class="title">TraceClassLoading</span>、-<span class="title">XX</span>：</span></span><br><span class="line">+TraceClassUnLoading查看类加载和卸载信息，其中-verbose：<span class="class"><span class="keyword">class</span>和-<span class="title">XX</span>：</span></span><br><span class="line">+TraceClassLoading可以在Product版的虚拟机中使用，-XX：+TraceClassUnLoading参数需要</span><br><span class="line">FastDebug版的虚拟机支持。</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>在大量使用反射、动态代理、CGLib等ByteCode框架、动态生成JSP以及OSGi这类频繁自定义ClassLoader的场景都需要虚拟机具备类卸载的功能，以保证永久代不会溢出。</li>
+</ol>
+<h4 id="3-3-垃圾收集算法"><a href="#3-3-垃圾收集算法" class="headerlink" title="3.3 垃圾收集算法"></a>3.3 垃圾收集算法</h4><h5 id="jvm内存分配"><a href="#jvm内存分配" class="headerlink" title="jvm内存分配"></a>jvm内存分配</h5><p><img src="/2019/08/03/jvm-learn3/1.png" alt="1"></p>
+<ol>
+<li><p>年轻代分为eden和Survivor两个去，Eden区占大容量，Survivor两个区占小容量，Hotspot默认比例是8:1:1</p>
+</li>
+<li><p>jdk1.8之后，取消永久代，取而代之的是被称为元空间Metaspace的区域，元空间存放在本地内存中，从而接解决了永久代的OOM异常，因为元空间的大小没有逻辑限制，与实际物理内存大小相同。</p>
+</li>
+</ol>
+<p>​     <strong>运行时常量池也相应的转移到元空间中。</strong></p>
+<ol start="3">
+<li>jdk1.7后字符串常量池从运行时常量池剥离，放入到堆内存中。</li>
+</ol>
+<p>​       字符串池里的内容是在类加载完成后完成，经过验证，准备阶段之后在堆中生成字符串对象实例，然后将该字符串对象实例的引用存到String pool中，（记住：string pool中存的是引用值而不是具体的实例对象，具体的实例对象是在堆中开辟的一块空间存放的）。 在HotSpot VM里实现的string pool功能的是一个StringTable类，它是一个哈希表，里面存的是驻留字符串(也就是我们常说的用双引号括起来的)的引用（而不是驻留字符串实例本身），也就是说在堆中的某些字符串实例被这个StringTable引用之后就等同被赋予了”驻留字符“身份。这个StringTable在每个HotSpot VM的实例只有一份，被所有的类共享。</p>
+<h5 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h5><ol>
+<li><p>标记-清除 mark-sweep </p>
+<ol>
+<li>标记需要清除的对象</li>
+<li>删除被标记对象</li>
+</ol>
+<p>缺点：</p>
+</li>
+</ol>
+<ul>
+<li><p>使的内存碎片化，产生大量不连续内存，当需要分配较大对象但是无法找到足够的连续    内存时，会触发另一次垃圾回收动作</p>
+</li>
+<li><p>效率不高，标记与清除两个过程效率都不高</p>
+</li>
+</ul>
+<ol start="2">
+<li>复制算法 copy<ol>
+<li>将内存分为大小相等的两块，每次只使用一块</li>
+<li>当一块内存用完了的时候，将所有存活的对象全部依次按顺序拷贝到另一块内存上</li>
+<li>清空掉原先已使用的内存空间</li>
+</ol>
+</li>
+</ol>
+<p>​     优点：每次对办个区域回收，不用考虑内存碎片，按顺序分配内存，实现简单，运行高效 </p>
+<p>​     缺点：由于要将内存缩小为原有内存的一半，代价高。  </p>
+<p>​         现代商用虚拟机基本将这种算法用在年轻代（youngGen）上。survivor区被分为两块内存，每次使用eden和其中一块survivor区，当发生回收时，将eden和survivor上存活的对象拷贝到另一块survivor矿建上。然后清理掉eden和刚才使用过的survivor空间。Hotspot虚拟机默认eden与survivor的大小比例是8:1。</p>
+<p>​         当survivor空间不够用时，需要依赖老年代进行分配担保。</p>
+<ol start="3">
+<li><p>标记-整理 mark-compact</p>
+<ol>
+<li>标记需要清理的对象</li>
+<li>将存活的对象顺序向一端移动</li>
+<li>清除掉边界以外的内存</li>
+</ol>
+</li>
+<li><p>分代收集算法</p>
+<p>就是根据不同的分代规则和其内存对象的特性，选用不同的收集算法。比如年轻代用复制算法，老年代用标记清除或者标记整理算法。</p>
+</li>
+</ol>
+<h5 id="HotSpot算法实现"><a href="#HotSpot算法实现" class="headerlink" title="HotSpot算法实现"></a>HotSpot算法实现</h5><ol>
+<li><p>stop in World，当执行GC时jvm会停顿所有真正执行的线程。</p>
+</li>
+<li><p>枚举根节点</p>
+<p>Hotsprot虚拟机OopMap用来存放对象的引用的指针，实现快速得知对象是否被引用，而不用检查所有执行上下文娱引用位置。</p>
+<p>OopMap 的设置是在safepoint，或 safeRange</p>
+</li>
+<li><p>safePoint 安全点</p>
+<p>程序执行时只有到达安全点，才能暂停，执行GC。产生safePoint的地方，是需要长时间运行的特征的地方。例如，循环的末尾，方法调用返回前，调用方法的call之后，抛出异常的位置，这些位置的目的是为了防止大循环或者程序调用的时候，一直不进入safePoint,导致其他线程等待它进入safePoint</p>
+<p>中断采用主动式中断（Voluntary Suspension）</p>
+</li>
+<li><p>safeRange 安全区域</p>
+<p>在一段代码片段中，引用关系不会发生变化，在区域中的任意地方开始GC都是安全的，当线程进入到safeRange中时，首先表示自己进入safeRange，然后直到出safeRange时都不用管是否有gc,jvm发起GC也不会管他是不是在safeRange，当线程要离开safeRange时，会检查系统是否已经完成证GC过程，如果完成了就继续执行，否则就等待，直到接收可以安全离开safeRange的信号为止。</p>
+</li>
+</ol>
+<h5 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h5><p><img src="/2019/08/03/jvm-learn3/2.png" alt="2"></p>
+<ol>
+<li><p>Serial GC是单线程GC，client模式下的新生代收集器，有明显的停止时间</p>
+</li>
+<li><p>ParNew GC 是Serial GC的并行版本，Server模式下的的新生代收集器。有明显的停止时间，</p>
+</li>
+<li><p>Parallel Scavenge GC， 关注吞吐量的新生代GC 。</p>
+<p>吞吐量=运行用户代码时间/(运行用户代码时间+垃圾收集时间)</p>
+</li>
+<li><p>Serial old 是单线程收集器，用于老年代。</p>
+</li>
+<li><p>Parallel Old GC 是并行收集器， Parallel Scavenge GC 的 老年代版本，使用 标记—整理算法</p>
+</li>
+<li><p>CMS(Concurrent Mark Sweep) 以最短回收停顿时间为目标的收集器。 使用标记—清除算法</p>
+<p>四个步骤：</p>
+<ol>
+<li>初始标记（CMS initial mark）  需要 “stop the world”  标记GCroot能直接关联的对象</li>
+<li>并发标记（CMS concurrent mark） GC Roots Tracing</li>
+<li>重新标记（CMS remark） 需要 “stop the world” 标记并发期间发生变动的对象</li>
+<li>并发清除（CMS concurrent sweep）</li>
+</ol>
+</li>
+<li><p>G1收集器，将java堆划分成不同的独立区域（region），然后以Region单位进行回收，整体上来看是基于标记—整理算法，单在从局部（两个region之间）是基于“复制算法实现的”。两种结合使得G1在运作时不会产生内存空间碎片。region 中的 Remenbered Set 帮助记录不同region中的对象引用关系，避免全堆扫描。</p>
+<p>不计算Remenbered Set 的操作，G1 GC 的运行大致分为4个步骤：</p>
+</li>
+<li><p>初始标记（Initial Marking）</p>
+</li>
+<li><p>并发标记（Concurrent Marking）</p>
+</li>
+<li><p>最终标记（Final Marking）</p>
+</li>
+<li><p>筛选回收（Live Data Counting and Evacuation）</p>
+</li>
+</ol>
+<h5 id="GC-名词解释"><a href="#GC-名词解释" class="headerlink" title="GC 名词解释"></a>GC 名词解释</h5><ul>
+<li>Minor GC  年轻代GC  Minor GC频繁，一般回收速度快</li>
+<li>Major GC(Full GC)  发生在老年代的GC。 一次 Full GC 本身不会触发 Minor GC， 但是可以通过配置使在执行Full GC之前 先执行Minor GC。Major GC速度比Minor GC 慢10倍以上</li>
+<li><strong>Full GC的次数 = 老年代GC时 stop the world的次数</strong></li>
+<li><strong>Full GC的时间 = 老年代GC时 stop the world的总时间</strong></li>
+</ul>
+<ol>
+<li><p>Major GC 与 Full GC 之间的关系</p>
+<p>可以认为Major GC == Full GC，他们是一个概念，就是针对老年代/永久代进行GC。</p>
+<p>Full GC 的本意是针对老年代，Metaspace的回收也是有Full GC 来完成的。  Metaspace 用量到达配置的 MetaspaceSize 就会触发一次 FGC 然后扩容 Metaspace，如果你使用的是 CMS，那就委托给 CMS GC 进行</p>
+</li>
+</ol>
+<h4 id="3-4-内存分配与回收策略"><a href="#3-4-内存分配与回收策略" class="headerlink" title="3.4 内存分配与回收策略"></a>3.4 内存分配与回收策略</h4><ol>
+<li><p>TLAB Thread Local Allocation Buffer，即线程本地分配缓存区，这是一个线程专用的内存分配区域</p>
+</li>
+<li><p>对象优先分配在Eden</p>
+</li>
+<li><p>-XX：PretenureSizeThreshold 参数可以配置大对象直接在老年代分配，这样做的目的是避免在Eden区和两个Survivor区之间发生大量的内存复制。</p>
+</li>
+<li><p>长期存活的对象进入老年代。-XX：MaxTenuringThreshold 可配置对象进入老年代的阈值。当出现对象是大小达到survivor空间的一半，满足这个规则的时候，即使对象不满足MaxTenuringThreshold所设定的年龄阈值，对象也会进入到老年代</p>
+</li>
+<li><p>HandlePromotionFailure 参数开关 用于是否要启用新生代的分配担保，1.5以前是不启用，6以后是默认启用，以减少full gc的次数</p>
+<p>分配担保就是，当发生minor GC时，使用复制算法，而survivor空间 不够用时，会使用老年代的空间，来保证有足够的空间拷贝。如果老年代的最大可用连续空间大于新生代所有对象的总空间，则可用确保minor gc的安全。如果不满足，虚拟机就要HandlePromotionFailure 是否开启，如果过开启，则会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试着进行一次Minor GC，尽管这次Minor GC是有风险的；如果小于，或者HandlePromotionFailure为false，那这时也要改为进行一次Full GC</p>
+</li>
+</ol>
+</div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2019-08-03</span><i class="fa fa-tag"></i><a class="tag" href="/categories/jvm/" title="jvm">jvm </a><a class="tag" href="/tags/jvm/" title="jvm">jvm </a><a class="tag" href="/tags/java/" title="java">java </a></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="javascript:(function(){EN_CLIP_HOST='http://www.evernote.com';try{var%20x=document.createElement('SCRIPT');x.type='text/javascript';x.src=EN_CLIP_HOST+'/public/bookmarkClipper.js?'+(new%20Date().getTime()/100000);document.getElementsByTagName('head')[0].appendChild(x);}catch(e){location.href=EN_CLIP_HOST+'/clip.action?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title);}})();" ref="nofollow" target="_blank"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="twitter"><a class="fa fa-twitter" href="http://twitter.com/home?status=,http://yoursite.com/2019/08/03/jvm-learn3/,SLAYERS,【JVM学习笔记】第三章-虚拟机执行子系统,;"></a></div></div><div class="pagination"><ul class="clearfix"><li class="next pagbuttons"><a class="btn" role="navigation" href="/2019/08/03/jvm-learn2/" title="【JVM学习笔记】第二章-自动内存管理机制">Próximo post</a></li></ul></div></div></div></div></div><script src="/js/jquery.js"></script><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script></body></html>
